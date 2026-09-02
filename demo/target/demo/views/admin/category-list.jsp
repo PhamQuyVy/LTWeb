@@ -9,6 +9,7 @@
 </head>
 <body>
 
+<a href="<c:url value='/'/>">&larr; Trang chủ</a><br><br>
 <a href="<c:url value="/admin/category/add"/>">Add Category</a><br>
 <hr>
 <table border="1" width="100%">

@@ -7,6 +7,8 @@
     <persistence-unit name="demoPU">
 
         <class>com.hcmute.demo.entity.Category</class>
+         <class>com.hcmute.demo.entity.Account</class>
+           <class>com.hcmute.demo.entity.Product</class>
 
         <properties>
 
