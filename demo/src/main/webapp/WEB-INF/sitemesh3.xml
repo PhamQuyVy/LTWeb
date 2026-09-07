@@ -1,0 +1,12 @@
+<sitemesh>
+    <mapping path="/admin/*" name="admin" decorator="admin.jsp"/>
+    <mapping path="/login" name="login" decorator="login.jsp"/>
+    <mapping path="/register" name="login" decorator="login.jsp"/>
+    <mapping path="/forgot-password" name="login" decorator="login.jsp"/>
+    <mapping path="/reset-password" name="login" decorator="login.jsp"/>
+    <mapping path="/verify-otp" name="login" decorator="login.jsp"/>
+    <mapping path="/image*" exclude="true"/>
+    <mapping path="/profile*" name="profile" decorator="profile-decorator.jsp"/>
+    <mapping path="/*" name="web" decorator="web.jsp"/>
+
+</sitemesh>

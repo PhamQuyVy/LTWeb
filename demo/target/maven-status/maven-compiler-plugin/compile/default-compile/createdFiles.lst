@@ -1,4 +1,6 @@
 com\hcmute\demo\controller\LoginController$1.class
+com\hcmute\demo\entity\User.class
+com\hcmute\demo\util\JPAUtil.class
 com\hcmute\demo\controller\ForgotPasswordController.class
 com\hcmute\demo\service\ICategoryService.class
 com\hcmute\demo\dao\impl\ProductDao.class
@@ -13,6 +15,7 @@ com\hcmute\demo\service\AccountService.class
 com\hcmute\demo\util\MailUtil.class
 com\hcmute\demo\entity\Category.class
 com\hcmute\demo\controller\ResetPasswordController.class
+com\hcmute\demo\repository\UserRepository.class
 com\hcmute\demo\util\MailUtil$1.class
 com\hcmute\demo\controller\RegisterController$1.class
 com\hcmute\demo\dao\AccountDao.class
@@ -27,6 +30,8 @@ com\hcmute\demo\controller\ProductController.class
 com\hcmute\demo\service\impl\ProductServiceImpl.class
 com\hcmute\demo\dao\IProductDao.class
 com\hcmute\demo\controller\CategoryController.class
+com\hcmute\demo\service\UserProfileService.class
+com\hcmute\demo\controller\ProfileController.class
 com\hcmute\demo\controller\ForgotPasswordController$1.class
 com\hcmute\demo\util\MailUtil$2.class
 com\hcmute\demo\config\JpaConfig.class
@@ -35,3 +40,4 @@ com\hcmute\demo\controller\RegisterController.class
 com\hcmute\demo\dao\impl\CategoryDao.class
 com\hcmute\demo\entity\Product.class
 com\hcmute\demo\entity\Account.class
+com\hcmute\demo\service\impl\UserProfileServiceImpl.class

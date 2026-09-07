@@ -9,6 +9,7 @@
         <class>com.hcmute.demo.entity.Category</class>
          <class>com.hcmute.demo.entity.Account</class>
            <class>com.hcmute.demo.entity.Product</class>
+        <class>com.hcmute.demo.entity.User</class>
 
         <properties>
 

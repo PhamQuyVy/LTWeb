@@ -28,6 +28,7 @@
         <a href="<c:url value='/product'/>">Sản phẩm</a>
         <c:choose>
             <c:when test="${sessionScope.account != null}">
+                <a href="<c:url value='/profile'/>">Trang cá nhân</a>
                 <a href="<c:url value='/admin/products'/>">Quản lý sản phẩm</a>
                 <a href="<c:url value='/admin/categories'/>">Quản lý danh mục</a>
                 <a href="<c:url value='/logout'/>">Đăng xuất (${sessionScope.account.fullName})</a>
