@@ -16,105 +16,179 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import jakarta.servlet.http.Part;
 
-/**
- * Xem & cập nhật thông tin cá nhân (fullName, phone, avatar).
- * GET  /profile -> hiển thị form với dữ liệu hiện tại
- * POST /profile -> nhận multipart/form-data, cập nhật DB qua JPA
- */
-@WebServlet("/profile")
 @MultipartConfig(
-        maxFileSize = 5 * 1024 * 1024,       // 5MB / file
-        maxRequestSize = 10 * 1024 * 1024,   // 10MB / request
-        fileSizeThreshold = 1024 * 1024      // > 1MB thì ghi ra file tạm thay vì giữ trong RAM
+        fileSizeThreshold = 1024 * 100,
+        maxFileSize = 2 * 1024 * 1024,
+        maxRequestSize = 3 * 1024 * 1024
 )
+@WebServlet("/profile")
 public class ProfileController extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-    private final UserProfileService userProfileService = new UserProfileServiceImpl();
+
+    private final UserProfileService profileService =
+            new UserProfileServiceImpl();
 
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp)
+    protected void doGet(
+            HttpServletRequest req,
+            HttpServletResponse resp)
             throws ServletException, IOException {
 
-        Account account = getLoggedAccount(req);
+        HttpSession session = req.getSession(false);
+
+        Account account = session == null
+                ? null
+                : (Account) session.getAttribute("account");
+
+        // Chưa đăng nhập
         if (account == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
-        // Thông báo flash (nếu vừa POST xong và redirect về đây)
-        HttpSession session = req.getSession();
-        Object flash = session.getAttribute("profileMessage");
-        if (flash != null) {
-            req.setAttribute("message", flash);
-            session.removeAttribute("profileMessage");
+        User user =
+                profileService.getProfile(account.getId());
+
+        if (user == null) {
+            session.invalidate();
+            resp.sendRedirect(req.getContextPath() + "/login");
+            return;
         }
 
-        User user = userProfileService.getProfile(account.getId());
         req.setAttribute("user", user);
-        req.getRequestDispatcher("/views/account/profile.jsp").forward(req, resp);
+
+        req.getRequestDispatcher(
+                "/views/account/profile.jsp"
+        ).forward(req, resp);
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
+    protected void doPost(
+            HttpServletRequest req,
+            HttpServletResponse resp)
             throws ServletException, IOException {
 
         req.setCharacterEncoding("UTF-8");
 
-        Account account = getLoggedAccount(req);
+        HttpSession session = req.getSession(false);
+
+        Account account = session == null
+                ? null
+                : (Account) session.getAttribute("account");
+
         if (account == null) {
             resp.sendRedirect(req.getContextPath() + "/login");
             return;
         }
 
-        String fullName = req.getParameter("fullName");
-        String phone = req.getParameter("phone");
+        String fullName =
+                trim(req.getParameter("fullName"));
 
-        // Validate cơ bản
-        if (fullName == null || fullName.trim().isEmpty()) {
-            forwardWithError(req, resp, account, "Họ tên không được để trống.");
+        String phone =
+                trim(req.getParameter("phone"));
+
+        // Validate fullname
+        if (fullName == null || fullName.isBlank()) {
+            showError(
+                    req,
+                    resp,
+                    account.getId(),
+                    "Họ và tên không được để trống."
+            );
             return;
         }
-        if (phone != null && !phone.isBlank() && !phone.matches("^[0-9+()\\-\\s]{8,20}$")) {
-            forwardWithError(req, resp, account, "Số điện thoại không hợp lệ.");
+
+        if (fullName.length() > 100) {
+            showError(
+                    req,
+                    resp,
+                    account.getId(),
+                    "Họ và tên tối đa 100 ký tự."
+            );
             return;
         }
 
-        Part avatarPart = req.getPart("avatarFile");
-        if (avatarPart != null && avatarPart.getSize() > 0) {
-            String contentType = avatarPart.getContentType();
-            if (contentType == null || !contentType.startsWith("image/")) {
-                forwardWithError(req, resp, account, "File tải lên phải là hình ảnh (jpg, png, gif...).");
-                return;
-            }
+        // Validate phone
+        if (phone != null
+                && !phone.isBlank()
+                && !phone.matches(
+                    "^(0|\\+84)[0-9]{9,10}$")) {
+
+            showError(
+                    req,
+                    resp,
+                    account.getId(),
+                    "Số điện thoại không hợp lệ."
+            );
+            return;
         }
 
         try {
-            userProfileService.updateProfile(account.getId(), fullName.trim(), phone, avatarPart);
 
-            // Đồng bộ lại full name hiển thị trên header (session đang giữ object Account)
-            account.setFullName(fullName.trim());
-            req.getSession().setAttribute("account", account);
+            // Lấy file từ multipart
+            Part avatarPart =
+                    req.getPart("avatar");
 
-            req.getSession().setAttribute("profileMessage", "Cập nhật thông tin thành công!");
-            resp.sendRedirect(req.getContextPath() + "/profile");
+            profileService.updateProfile(
+                    account.getId(),
+                    fullName,
+                    phone,
+                    avatarPart
+            );
+
+            // Cập nhật tên trong session
+            account.setFullName(fullName);
+            session.setAttribute("account", account);
+
+            resp.sendRedirect(
+                    req.getContextPath()
+                    + "/profile?success=1"
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            showError(
+                    req,
+                    resp,
+                    account.getId(),
+                    e.getMessage()
+            );
 
         } catch (Exception e) {
-            forwardWithError(req, resp, account, "Cập nhật thất bại: " + e.getMessage());
+
+            e.printStackTrace();
+
+            showError(
+                    req,
+                    resp,
+                    account.getId(),
+                    "Không thể cập nhật hồ sơ. Vui lòng thử lại."
+            );
         }
     }
 
-    private void forwardWithError(HttpServletRequest req, HttpServletResponse resp,
-                                   Account account, String errorMessage)
+    private void showError(
+            HttpServletRequest req,
+            HttpServletResponse resp,
+            int userId,
+            String message)
             throws ServletException, IOException {
-        req.setAttribute("error", errorMessage);
-        User user = userProfileService.getProfile(account.getId());
+
+        User user =
+                profileService.getProfile(userId);
+
         req.setAttribute("user", user);
-        req.getRequestDispatcher("/views/account/profile.jsp").forward(req, resp);
+        req.setAttribute("error", message);
+
+        req.getRequestDispatcher(
+                "/views/account/profile.jsp"
+        ).forward(req, resp);
     }
 
-    private Account getLoggedAccount(HttpServletRequest req) {
-        HttpSession session = req.getSession(false);
-        return session == null ? null : (Account) session.getAttribute("account");
+    private static String trim(String value) {
+        return value == null
+                ? null
+                : value.trim();
     }
 }
