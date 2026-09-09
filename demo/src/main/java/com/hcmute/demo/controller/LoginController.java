@@ -31,8 +31,15 @@ public class LoginController extends HttpServlet {
             throws ServletException, IOException {
 
         req.setCharacterEncoding("UTF-8");
-        String username = req.getParameter("username");
+        String username = trim(req.getParameter("username"));
         String password = req.getParameter("password");
+
+        req.setAttribute("username", username); 
+        if (isBlank(username) || isBlank(password)) {
+            req.setAttribute("error", "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.");
+            req.getRequestDispatcher("/views/account/login.jsp").forward(req, resp);
+            return;
+        }
 
         Result result = accountService.login(username, password);
 
@@ -56,4 +63,7 @@ public class LoginController extends HttpServlet {
                 resp.sendRedirect(req.getContextPath() + "/");
         }
     }
+
+    private static String trim(String v) { return v == null ? null : v.trim(); }
+    private static boolean isBlank(String v) { return v == null || v.trim().isEmpty(); }
 }

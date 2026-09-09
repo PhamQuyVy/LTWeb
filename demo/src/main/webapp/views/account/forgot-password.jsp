@@ -25,7 +25,7 @@
     <% } %>
 
     <form method="post" action="${pageContext.request.contextPath}/forgot-password">
-        <input type="email" name="email" placeholder="Email" required>
+        <input type="email" name="email" value="${email}" placeholder="Email" required>
         <button type="submit">Gửi mã OTP</button>
     </form>
 </div>

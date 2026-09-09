@@ -18,13 +18,16 @@ import jakarta.servlet.http.HttpSession;
 public class RegisterController extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
-
     private final AccountService accountService = new AccountServiceImpl();
+
+    private static final String EMAIL_REGEX = "^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$";
+    private static final String USERNAME_REGEX = "^[a-zA-Z0-9_]{4,20}$";
+    // Tối thiểu 6 ký tự, có ít nhất 1 chữ và 1 số
+    private static final String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*\\d).{6,}$";
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-
         req.getRequestDispatcher("/views/account/register.jsp").forward(req, resp);
     }
 
@@ -38,15 +41,40 @@ public class RegisterController extends HttpServlet {
         String email = trim(req.getParameter("email"));
         String username = trim(req.getParameter("username"));
         String password = req.getParameter("password");
+        String confirmPassword = req.getParameter("confirmPassword");
 
-        if (isBlank(fullName) || isBlank(email) || isBlank(username) || isBlank(password)) {
+        // Giữ lại giá trị đã nhập để hiện lại khi lỗi (trừ password)
+        req.setAttribute("fullName", fullName);
+        req.setAttribute("email", email);
+        req.setAttribute("username", username);
+
+        if (isBlank(fullName) || isBlank(email) || isBlank(username)
+                || isBlank(password) || isBlank(confirmPassword)) {
             req.setAttribute("error", "Vui lòng nhập đầy đủ thông tin.");
             forwardBack(req, resp);
             return;
         }
 
-        if (!email.matches("^[\\w.+-]+@[\\w-]+\\.[a-zA-Z]{2,}$")) {
+        if (!email.matches(EMAIL_REGEX)) {
             req.setAttribute("error", "Email không hợp lệ.");
+            forwardBack(req, resp);
+            return;
+        }
+
+        if (!username.matches(USERNAME_REGEX)) {
+            req.setAttribute("error", "Tên đăng nhập phải từ 4-20 ký tự, chỉ gồm chữ, số và dấu gạch dưới.");
+            forwardBack(req, resp);
+            return;
+        }
+
+        if (!password.matches(PASSWORD_REGEX)) {
+            req.setAttribute("error", "Mật khẩu tối thiểu 6 ký tự, gồm cả chữ và số.");
+            forwardBack(req, resp);
+            return;
+        }
+
+        if (!password.equals(confirmPassword)) {
+            req.setAttribute("error", "Mật khẩu xác nhận không khớp.");
             forwardBack(req, resp);
             return;
         }
@@ -89,11 +117,6 @@ public class RegisterController extends HttpServlet {
         req.getRequestDispatcher("/views/account/register.jsp").forward(req, resp);
     }
 
-    private static String trim(String value) {
-        return value == null ? null : value.trim();
-    }
-
-    private static boolean isBlank(String value) {
-        return value == null || value.trim().isEmpty();
-    }
+    private static String trim(String value) { return value == null ? null : value.trim(); }
+    private static boolean isBlank(String value) { return value == null || value.trim().isEmpty(); }
 }

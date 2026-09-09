@@ -18,6 +18,8 @@ public class ResetPasswordController extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private final AccountService accountService = new AccountServiceImpl();
+    private static final String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*\\d).{6,}$";
+    private static final String OTP_REGEX = "^\\d{6}$";
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
@@ -46,13 +48,31 @@ public class ResetPasswordController extends HttpServlet {
             return;
         }
 
-        String otpCode = req.getParameter("otpCode");
+        String otpCode = trim(req.getParameter("otpCode"));
         String newPassword = req.getParameter("newPassword");
         String confirmPassword = req.getParameter("confirmPassword");
 
         req.setAttribute("email", email);
 
-        if (newPassword == null || !newPassword.equals(confirmPassword)) {
+        if (isBlank(otpCode) || isBlank(newPassword) || isBlank(confirmPassword)) {
+            req.setAttribute("error", "Vui lòng nhập đầy đủ thông tin.");
+            req.getRequestDispatcher("/views/account/reset-password.jsp").forward(req, resp);
+            return;
+        }
+
+        if (!otpCode.matches(OTP_REGEX)) {
+            req.setAttribute("error", "Mã OTP phải gồm đúng 6 chữ số.");
+            req.getRequestDispatcher("/views/account/reset-password.jsp").forward(req, resp);
+            return;
+        }
+
+        if (!newPassword.matches(PASSWORD_REGEX)) {
+            req.setAttribute("error", "Mật khẩu tối thiểu 6 ký tự, gồm cả chữ và số.");
+            req.getRequestDispatcher("/views/account/reset-password.jsp").forward(req, resp);
+            return;
+        }
+
+        if (!newPassword.equals(confirmPassword)) {
             req.setAttribute("error", "Mật khẩu xác nhận không khớp.");
             req.getRequestDispatcher("/views/account/reset-password.jsp").forward(req, resp);
             return;
@@ -81,4 +101,7 @@ public class ResetPasswordController extends HttpServlet {
                 resp.sendRedirect(req.getContextPath() + "/login");
         }
     }
+
+    private static String trim(String v) { return v == null ? null : v.trim(); }
+    private static boolean isBlank(String v) { return v == null || v.trim().isEmpty(); }
 }

@@ -26,12 +26,12 @@
         <div class="error"><%= request.getAttribute("error") %></div>
     <% } %>
 
-    <form method="post" action="${pageContext.request.contextPath}/login">
+    <form method="post" action="${pageContext.request.contextPath}/login" novalidate>
         <label>Tên đăng nhập</label>
-        <input type="text" name="username" required>
+        <input type="text" name="username" value="${username}" required minlength="4" maxlength="50" autofocus>
 
         <label>Mật khẩu</label>
-        <input type="password" name="password" required>
+        <input type="password" name="password" required minlength="6" maxlength="255">
 
         <button type="submit">Đăng nhập</button>
     </form>

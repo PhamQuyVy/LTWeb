@@ -8,5 +8,15 @@
 </head>
 <body>
 <sitemesh:write property='body'/>
+<script>
+document.querySelector("form").addEventListener("submit", function (e) {
+    const u = this.username.value.trim();
+    const p = this.password.value;
+    if (!u || !p) {
+        alert("Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.");
+        e.preventDefault();
+    }
+});
+</script>
 </body>
 </html>

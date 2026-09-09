@@ -26,12 +26,25 @@
         <div class="error"><%= request.getAttribute("error") %></div>
     <% } %>
 
-    <form method="post" action="${pageContext.request.contextPath}/reset-password">
-        <input type="text" name="otpCode" maxlength="6" placeholder="Mã OTP" required>
-        <input type="password" name="newPassword" placeholder="Mật khẩu mới" required>
-        <input type="password" name="confirmPassword" placeholder="Xác nhận mật khẩu mới" required>
+    <form method="post" action="${pageContext.request.contextPath}/reset-password" novalidate
+          onsubmit="return checkConfirm();">
+        <input type="text" name="otpCode" maxlength="6" pattern="^\d{6}$"
+               title="Mã OTP gồm 6 chữ số" placeholder="Mã OTP" required>
+        <input type="password" id="newPassword" name="newPassword" placeholder="Mật khẩu mới"
+               pattern="^(?=.*[A-Za-z])(?=.*\d).{6,}$"
+               title="Tối thiểu 6 ký tự, gồm cả chữ và số" required>
+        <input type="password" id="confirmPassword" name="confirmPassword"
+               placeholder="Xác nhận mật khẩu mới" required>
         <button type="submit">Đặt lại mật khẩu</button>
     </form>
 </div>
+<script>
+    function checkConfirm() {
+        var a = document.getElementById('newPassword').value;
+        var b = document.getElementById('confirmPassword').value;
+        if (a !== b) { alert('Mật khẩu xác nhận không khớp.'); return false; }
+        return true;
+    }
+</script>
 </body>
 </html>
